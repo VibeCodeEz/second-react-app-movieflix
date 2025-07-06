@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 // OMDB API Configuration
 const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY || 'c37ef71f';
 const OMDB_BASE_URL = import.meta.env.VITE_OMDB_BASE_URL || 'https://www.omdbapi.com/';
@@ -44,6 +46,48 @@ export interface SearchResult {
   poster: string;
 }
 
+// OMDB API types
+export interface OmdbSearchItem {
+  Title: string;
+  Year: string;
+  imdbID: string;
+  Type: string;
+  Poster: string;
+}
+
+export interface OmdbRating {
+  Source: string;
+  Value: string;
+}
+
+export interface OmdbMovie {
+  Title: string;
+  Year: string;
+  Rated: string;
+  Released: string;
+  Runtime: string;
+  Genre: string;
+  Director: string;
+  Writer: string;
+  Actors: string;
+  Plot: string;
+  Language: string;
+  Country: string;
+  Awards: string;
+  Poster: string;
+  Ratings: OmdbRating[];
+  Metascore: string;
+  imdbRating: string;
+  imdbVotes: string;
+  imdbID: string;
+  Type: string;
+  DVD: string;
+  BoxOffice: string;
+  Production: string;
+  Website: string;
+  Response: string;
+}
+
 // Update SearchResult and SearchResponse types if needed
 export interface SearchResponse {
   movies: SearchResult[];
@@ -51,7 +95,7 @@ export interface SearchResponse {
 }
 
 // Helper to map OMDB Search result to your SearchResult type
-function mapOmdbToSearchResult(item: any): SearchResult {
+function mapOmdbToSearchResult(item: OmdbSearchItem): SearchResult {
   return {
     title: item.Title,
     year: item.Year,
@@ -105,7 +149,7 @@ export const searchMovies = async (searchTerm: string, page: number = 1): Promis
   }
 };
 
-function mapOmdbToMovie(item: any): Movie {
+function mapOmdbToMovie(item: OmdbMovie): Movie {
   return {
     id: item.imdbID,
     title: item.Title,
@@ -122,7 +166,7 @@ function mapOmdbToMovie(item: any): Movie {
     country: item.Country,
     awards: item.Awards,
     poster: item.Poster,
-    ratings: (item.Ratings || []).map((r: any) => ({
+    ratings: (item.Ratings || []).map((r: OmdbRating) => ({
       source: r.Source,
       value: r.Value,
     })),
@@ -220,24 +264,38 @@ export const testApiConnection = async (): Promise<boolean> => {
     console.log('Testing API connection...');
     console.log('API Key:', OMDB_API_KEY ? 'Present' : 'Missing');
     console.log('Base URL:', OMDB_BASE_URL);
+    console.log('Environment:', import.meta.env.DEV ? 'Development' : 'Production');
     
-    const response = await fetch(
-      `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&s=movie&type=movie&page=1`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const testUrl = `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&s=movie&type=movie&page=1`;
+    console.log('Test URL:', testUrl);
+    
+    const response = await fetch(testUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     
     console.log('Test response status:', response.status);
+    console.log('Test response headers:', Object.fromEntries(response.headers.entries()));
+    
+    if (!response.ok) {
+      console.error('API test failed with status:', response.status, response.statusText);
+      return false;
+    }
+    
     const data = await response.json();
     console.log('Test response data:', data);
     
-    return data.Response === 'True';
+    if (data.Response === 'True') {
+      console.log('✅ API test successful');
+      return true;
+    } else {
+      console.error('API test failed with error:', data.Error);
+      return false;
+    }
   } catch (error) {
-    console.error('API test failed:', error);
+    console.error('API test failed with exception:', error);
     return false;
   }
 };
