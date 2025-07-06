@@ -1,6 +1,6 @@
 // OMDB API Configuration
-const OMDB_API_KEY = 'c37ef71f';
-const OMDB_BASE_URL = 'http://www.omdbapi.com/';
+const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY || 'c37ef71f';
+const OMDB_BASE_URL = import.meta.env.VITE_OMDB_BASE_URL || 'https://www.omdbapi.com/';
 
 export interface Movie {
   id: string;
@@ -61,24 +61,44 @@ function mapOmdbToSearchResult(item: any): SearchResult {
   };
 }
 
-// Search movies by title with pagination
+// Enhanced search with fallback
 export const searchMovies = async (searchTerm: string, page: number = 1): Promise<SearchResponse> => {
   console.log('searchMovies called with:', searchTerm, 'page:', page);
+  
   try {
     const response = await fetch(
-      `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(searchTerm)}&type=movie&page=${page}`
+      `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(searchTerm)}&type=movie&page=${page}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
+    
+    if (!response.ok) {
+      console.error('API Response not ok:', response.status, response.statusText);
+      // Fallback to mock data
+      return { movies: getMockMovies(), totalResults: getMockMovies().length };
+    }
+    
     const data = await response.json();
+    console.log('API Response:', data);
+    
     if (data.Response === 'True') {
       return {
         movies: (data.Search || []).map(mapOmdbToSearchResult),
         totalResults: parseInt(data.totalResults) || (data.Search ? data.Search.length : 0),
       };
     } else {
-      return { movies: [], totalResults: 0 };
+      console.error('API Error:', data.Error);
+      // Fallback to mock data
+      return { movies: getMockMovies(), totalResults: getMockMovies().length };
     }
   } catch (error) {
-    return { movies: [], totalResults: 0 };
+    console.error('Fetch error:', error);
+    // Fallback to mock data
+    return { movies: getMockMovies(), totalResults: getMockMovies().length };
   }
 };
 
@@ -120,9 +140,22 @@ function mapOmdbToMovie(item: any): Movie {
 export const getMovieDetails = async (imdbId: string): Promise<Movie | null> => {
   try {
     const response = await fetch(
-      `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&i=${imdbId}&plot=full`
+      `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&i=${imdbId}&plot=full`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
+    
+    if (!response.ok) {
+      console.error('Movie details API Response not ok:', response.status, response.statusText);
+      return null;
+    }
+    
     const data = await response.json();
+    console.log('Movie details API Response:', data);
     
     if (data.Response === 'True') {
       return mapOmdbToMovie(data);
@@ -142,19 +175,37 @@ export const getPopularMovies = async (page: number = 1): Promise<SearchResponse
   const randomTerm = popularTerms[Math.floor(Math.random() * popularTerms.length)];
   try {
     const response = await fetch(
-      `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&s=${randomTerm}&type=movie&page=${page}`
+      `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&s=${randomTerm}&type=movie&page=${page}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
+    
+    if (!response.ok) {
+      console.error('Popular movies API Response not ok:', response.status, response.statusText);
+      return { movies: [], totalResults: 0 };
+    }
+    
     const data = await response.json();
+    console.log('Popular movies API Response:', data);
+    
     if (data.Response === 'True') {
       return {
         movies: (data.Search || []).map(mapOmdbToSearchResult),
         totalResults: parseInt(data.totalResults) || (data.Search ? data.Search.length : 0),
       };
     } else {
-      return { movies: [], totalResults: 0 };
+      console.error('Popular movies API Error:', data.Error);
+      // Fallback to mock data
+      return { movies: getMockMovies(), totalResults: getMockMovies().length };
     }
   } catch (error) {
-    return { movies: [], totalResults: 0 };
+    console.error('Popular movies fetch error:', error);
+    // Fallback to mock data
+    return { movies: getMockMovies(), totalResults: getMockMovies().length };
   }
 };
 
