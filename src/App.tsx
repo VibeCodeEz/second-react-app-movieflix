@@ -5,6 +5,7 @@ import Home from './components/Home.tsx';
 import Movies from './components/Movies.tsx';
 import MovieDetail from './components/MovieDetail.tsx';
 import Watchlist from './components/Watchlist.tsx';
+import ApiDebug from './components/ApiDebug.tsx';
 import { createContext, useEffect, useState } from 'react';
 
 export const ThemeContext = createContext({
@@ -35,6 +36,7 @@ function App() {
               <Route path="/watchlist" element={<Watchlist />} />
             </Routes>
           </main>
+          <ApiDebug />
       </div>
       </Router>
     </ThemeContext.Provider>

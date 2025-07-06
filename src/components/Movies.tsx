@@ -110,7 +110,13 @@ const Movies: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const results = await searchMovies(search || 'marvel', page);
+      // Use a broader search term if no specific search is provided
+      const searchTerm = search || 'movie';
+      console.log('Loading movies with search term:', searchTerm, 'page:', page);
+      
+      const results = await searchMovies(searchTerm, page);
+      console.log('Search results:', results);
+      
       const moviesWithGenre = addGenreToMovies(results.movies);
       if (reset) {
         setMovies(moviesWithGenre);
@@ -118,7 +124,9 @@ const Movies: React.FC = () => {
         setMovies(prev => [...prev, ...moviesWithGenre]);
       }
 
-      setHasMore(movies.length + results.movies.length < results.totalResults);
+      const hasMoreResults = results.movies.length > 0 && (movies.length + results.movies.length) < results.totalResults;
+      console.log('Has more results:', hasMoreResults, 'Total results:', results.totalResults);
+      setHasMore(hasMoreResults);
     } catch (error) {
       console.error('Error loading movies:', error);
       setError('Failed to load movies. Please try again later.');

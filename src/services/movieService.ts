@@ -78,7 +78,8 @@ export const searchMovies = async (searchTerm: string, page: number = 1): Promis
     
     if (!response.ok) {
       console.error('API Response not ok:', response.status, response.statusText);
-      // Fallback to mock data
+      // Fallback to mock data for better user experience
+      console.log('Falling back to mock data due to API error');
       return { movies: getMockMovies(), totalResults: getMockMovies().length };
     }
     
@@ -92,12 +93,14 @@ export const searchMovies = async (searchTerm: string, page: number = 1): Promis
       };
     } else {
       console.error('API Error:', data.Error);
-      // Fallback to mock data
+      // Fallback to mock data for better user experience
+      console.log('Falling back to mock data due to API error');
       return { movies: getMockMovies(), totalResults: getMockMovies().length };
     }
   } catch (error) {
     console.error('Fetch error:', error);
-    // Fallback to mock data
+    // Fallback to mock data for better user experience
+    console.log('Falling back to mock data due to fetch error');
     return { movies: getMockMovies(), totalResults: getMockMovies().length };
   }
 };
@@ -171,7 +174,7 @@ export const getMovieDetails = async (imdbId: string): Promise<Movie | null> => 
 
 // Get popular movies (using search with common terms and pagination)
 export const getPopularMovies = async (page: number = 1): Promise<SearchResponse> => {
-  const popularTerms = ['avengers', 'batman', 'spider', 'star wars', 'marvel'];
+  const popularTerms = ['movie', 'action', 'drama', 'comedy', 'adventure'];
   const randomTerm = popularTerms[Math.floor(Math.random() * popularTerms.length)];
   try {
     const response = await fetch(
@@ -199,13 +202,43 @@ export const getPopularMovies = async (page: number = 1): Promise<SearchResponse
       };
     } else {
       console.error('Popular movies API Error:', data.Error);
-      // Fallback to mock data
+      // Fallback to mock data for better user experience
+      console.log('Falling back to mock data for popular movies');
       return { movies: getMockMovies(), totalResults: getMockMovies().length };
     }
   } catch (error) {
     console.error('Popular movies fetch error:', error);
-    // Fallback to mock data
+    // Fallback to mock data for better user experience
+    console.log('Falling back to mock data for popular movies');
     return { movies: getMockMovies(), totalResults: getMockMovies().length };
+  }
+};
+
+// Test API connection
+export const testApiConnection = async (): Promise<boolean> => {
+  try {
+    console.log('Testing API connection...');
+    console.log('API Key:', OMDB_API_KEY ? 'Present' : 'Missing');
+    console.log('Base URL:', OMDB_BASE_URL);
+    
+    const response = await fetch(
+      `${OMDB_BASE_URL}?apikey=${OMDB_API_KEY}&s=movie&type=movie&page=1`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    console.log('Test response status:', response.status);
+    const data = await response.json();
+    console.log('Test response data:', data);
+    
+    return data.Response === 'True';
+  } catch (error) {
+    console.error('API test failed:', error);
+    return false;
   }
 };
 
@@ -239,6 +272,62 @@ export const getMockMovies = (): SearchResult[] => {
       imdbID: "tt0110912",
       type: "movie",
       poster: "https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"
+    },
+    {
+      title: "The Shawshank Redemption",
+      year: "1994",
+      imdbID: "tt0111161",
+      type: "movie",
+      poster: "https://m.media-amazon.com/images/M/MV5BNDE3ODcxYzMtY2YzZC00NmNlLWJiNDMtZDViZWM2MzIxZDYwXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_SX300.jpg"
+    },
+    {
+      title: "Forrest Gump",
+      year: "1994",
+      imdbID: "tt0109830",
+      type: "movie",
+      poster: "https://m.media-amazon.com/images/M/MV5BNWIwODRlZTUtY2U3ZS00Yzg1LWJhNzYtMmZiYmEyNmU1NjExXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"
+    },
+    {
+      title: "The Matrix",
+      year: "1999",
+      imdbID: "tt0133093",
+      type: "movie",
+      poster: "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"
+    },
+    {
+      title: "Goodfellas",
+      year: "1990",
+      imdbID: "tt0099685",
+      type: "movie",
+      poster: "https://m.media-amazon.com/images/M/MV5BY2NkZjEzMDgtN2RjYy00YzM1LWI4ZmQtMjMgYjAxNWQ0ODI@._V1_SX300.jpg"
+    },
+    {
+      title: "The Silence of the Lambs",
+      year: "1991",
+      imdbID: "tt0102926",
+      type: "movie",
+      poster: "https://m.media-amazon.com/images/M/MV5BNjNhZTk0ZmEtNjJhMi00YzFlLWE1MmEtYzM1M2ZmMGMwMTU4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"
+    },
+    {
+      title: "Fight Club",
+      year: "1999",
+      imdbID: "tt0137523",
+      type: "movie",
+      poster: "https://m.media-amazon.com/images/M/MV5BNDIzNDU0YzEtYzE5Ni00ZjlkLTk5ZjgtNjM3NWE4YzA3Nzk3XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_SX300.jpg"
+    },
+    {
+      title: "The Godfather",
+      year: "1972",
+      imdbID: "tt0068646",
+      type: "movie",
+      poster: "https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"
+    },
+    {
+      title: "Schindler's List",
+      year: "1993",
+      imdbID: "tt0108052",
+      type: "movie",
+      poster: "https://m.media-amazon.com/images/M/MV5BNDE4OTMxMTctNmRhYy00NWE2LTg3YzItYTk3M2UwOTU5Njg4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"
     }
   ];
 };
