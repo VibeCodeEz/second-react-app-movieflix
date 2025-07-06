@@ -35,7 +35,7 @@ function App() {
               <Route path="/watchlist" element={<Watchlist />} />
             </Routes>
           </main>
-        </div>
+      </div>
       </Router>
     </ThemeContext.Provider>
   );
